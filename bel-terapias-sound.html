@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bel Terapias — Logo Sound</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:    #f7f4ef;
+    --bg2:   #eee9e0;
+    --ink:   #2d2a25;
+    --muted: #9a9188;
+    --green: #7a9e8e;
+    --gold:  #c4a882;
+    --glow:  rgba(122,158,142,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px 60px;
+  }
+
+  .rings {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; z-index: 0;
+  }
+  .ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(122,158,142,0.13);
+    animation: breathe 8s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%,100% { transform:scale(1); opacity:.5; }
+    50%     { transform:scale(1.04); opacity:1; }
+  }
+
+  .card {
+    position: relative; z-index: 2;
+    text-align: center;
+    max-width: 440px; width: 100%;
+  }
+
+  /* Brand */
+  .brand { margin-bottom: 44px; }
+  .brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 54px; font-weight: 300;
+    letter-spacing: 8px; text-transform: uppercase;
+    line-height: 1;
+  }
+  .brand-sub {
+    font-size: 11px; font-weight: 200;
+    letter-spacing: 5px; color: var(--muted);
+    text-transform: uppercase; margin-top: 10px;
+  }
+  .divider {
+    width: 36px; height: 1px;
+    background: var(--gold);
+    margin: 16px auto 0; opacity: .6;
+  }
+
+  /* Om interval display */
+  .om-row {
+    display: flex; justify-content: center;
+    align-items: center; gap: 20px;
+    margin-bottom: 36px;
+  }
+  .om-note { text-align: center; }
+  .om-note-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px; font-weight: 300;
+    color: var(--green); letter-spacing: 2px;
+  }
+  .om-note-hz {
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .om-arrow { color: var(--gold); font-size: 20px; opacity: .7; }
+  .om-tag {
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--gold); text-transform: uppercase;
+    border: 1px solid var(--gold);
+    padding: 3px 8px; border-radius: 2px; opacity: .7;
+  }
+
+  /* Bowl */
+  .bowl-wrap {
+    position: relative;
+    width: 180px; height: 180px;
+    margin: 0 auto 36px;
+    cursor: pointer;
+  }
+  .bowl-svg {
+    width: 100%; height: 100%;
+    transition: filter .4s;
+  }
+  .bowl-wrap.playing .bowl-svg {
+    filter: drop-shadow(0 0 16px var(--glow)) drop-shadow(0 0 36px var(--glow));
+  }
+  .ripple-container {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wave-ring {
+    position: absolute; border-radius: 50%;
+    border: 1.5px solid var(--green); opacity: 0;
+  }
+  .bowl-wrap.playing .wave-ring:nth-child(1) { animation: rippleOut 2.5s ease-out 0.0s infinite; }
+  .bowl-wrap.playing .wave-ring:nth-child(2) { animation: rippleOut 2.5s ease-out 0.8s infinite; }
+  .bowl-wrap.playing .wave-ring:nth-child(3) { animation: rippleOut 2.5s ease-out 1.6s infinite; }
+  @keyframes rippleOut {
+    0%   { width:70px;  height:70px;  opacity:.7; }
+    100% { width:260px; height:260px; opacity:0;  }
+  }
+
+  .play-hint {
+    font-size: 10px; letter-spacing: 4px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  /* Visualizer */
+  canvas {
+    display: block; width: 100%; height: 44px;
+    margin-bottom: 24px;
+  }
+
+  /* Controls */
+  .controls {
+    background: white;
+    border-radius: 2px;
+    padding: 24px 24px 20px;
+    box-shadow: 0 2px 30px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .controls-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 20px; text-align: center;
+  }
+  .param { margin-bottom: 16px; }
+  .param:last-child { margin-bottom: 0; }
+  .param-row {
+    display: flex; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .param-label {
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted);
+    font-weight: 300;
+  }
+  .param-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; color: var(--green); font-style: italic;
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 1px;
+    background: var(--bg2); outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    background: var(--green); border-radius: 50%;
+    cursor: pointer; transition: transform .1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.4); }
+
+  /* Buttons */
+  .play-btn {
+    width: 100%; padding: 17px 0;
+    background: var(--green); color: white; border: none;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 5px; text-transform: uppercase;
+    cursor: pointer; border-radius: 1px;
+    transition: all .25s; margin-bottom: 12px;
+  }
+  .play-btn:hover {
+    background: #6a8e7e;
+    box-shadow: 0 4px 20px var(--glow);
+    transform: translateY(-1px);
+  }
+  .export-btn {
+    width: 100%; padding: 13px 0;
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--bg2);
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; font-weight: 300;
+    letter-spacing: 4px; text-transform: uppercase;
+    cursor: pointer; border-radius: 1px; transition: all .2s;
+  }
+  .export-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  footer {
+    margin-top: 20px;
+    font-size: 9px; letter-spacing: 3px;
+    color: var(--bg2); text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="rings">
+  <div class="ring" style="width:100px;height:100px;animation-delay:0s"></div>
+  <div class="ring" style="width:200px;height:200px;animation-delay:1s"></div>
+  <div class="ring" style="width:320px;height:320px;animation-delay:2s"></div>
+  <div class="ring" style="width:460px;height:460px;animation-delay:1.5s"></div>
+  <div class="ring" style="width:620px;height:620px;animation-delay:0.5s"></div>
+  <div class="ring" style="width:800px;height:800px;animation-delay:3s"></div>
+</div>
+
+<div class="card">
+
+  <div class="brand">
+    <div class="brand-name">Bel</div>
+    <div class="brand-sub">Terapias &middot; Musicoterapia</div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="om-row">
+    <div class="om-note">
+      <div class="om-note-name">Sol</div>
+      <div class="om-note-hz">G4 &middot; 392 Hz</div>
+    </div>
+    <div class="om-arrow">&#8599;</div>
+    <div class="om-note">
+      <div class="om-note-name">Si&#9837;</div>
+      <div class="om-note-hz">B&#9837;4 &middot; 466 Hz</div>
+    </div>
+    <div class="om-tag">3&ordf; menor &middot; OM</div>
+  </div>
+
+  <div class="bowl-wrap" id="bowlWrap">
+    <div class="ripple-container">
+      <div class="wave-ring"></div>
+      <div class="wave-ring"></div>
+      <div class="wave-ring"></div>
+    </div>
+    <svg class="bowl-svg" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="90" cy="134" rx="65" ry="7" fill="rgba(122,158,142,0.10)"/>
+      <path d="M28 80 Q28 140 90 140 Q152 140 152 80" stroke="#7a9e8e" stroke-width="2" fill="rgba(122,158,142,0.07)"/>
+      <ellipse cx="90" cy="80" rx="62" ry="11" stroke="#7a9e8e" stroke-width="2" fill="rgba(122,158,142,0.06)"/>
+      <ellipse cx="90" cy="80" rx="52" ry="8" stroke="#c4a882" stroke-width="0.8" fill="none" opacity="0.45"/>
+      <ellipse cx="90" cy="137" rx="24" ry="4.5" stroke="#7a9e8e" stroke-width="1.5" fill="rgba(122,158,142,0.10)"/>
+      <line x1="138" y1="44" x2="108" y2="83" stroke="#c4a882" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="138" cy="41" r="5" fill="#c4a882" opacity="0.65"/>
+      <path d="M48 98 Q90 91 132 98" stroke="white" stroke-width="1" opacity="0.25" fill="none"/>
+    </svg>
+  </div>
+
+  <p class="play-hint">Tocá el cuenco o el botón</p>
+
+  <canvas id="viz" width="440" height="44"></canvas>
+
+  <div class="controls">
+    <div class="controls-title">Ajustar</div>
+
+    <div class="param">
+      <div class="param-row">
+        <span class="param-label">Pausa entre notas</span>
+        <span class="param-val" id="gapVal">1.8 s</span>
+      </div>
+      <input type="range" id="gap" min="0.4" max="4" value="1.8" step="0.1">
+    </div>
+
+    <div class="param">
+      <div class="param-row">
+        <span class="param-label">Sustain</span>
+        <span class="param-val" id="sustainVal">4.0 s</span>
+      </div>
+      <input type="range" id="sustain" min="1" max="8" value="4" step="0.1">
+    </div>
+
+    <div class="param">
+      <div class="param-row">
+        <span class="param-label">Calidez</span>
+        <span class="param-val" id="warmthVal">media</span>
+      </div>
+      <input type="range" id="warmth" min="0" max="1" value="0.5" step="0.05">
+    </div>
+
+    <div class="param">
+      <div class="param-row">
+        <span class="param-label">Reverb</span>
+        <span class="param-val" id="reverbVal">0.50</span>
+      </div>
+      <input type="range" id="reverb" min="0" max="1" value="0.5" step="0.05">
+    </div>
+  </div>
+
+  <button class="play-btn" id="playBtn">&#9654;&nbsp;&nbsp; Reproducir logo sound</button>
+  <button class="export-btn" id="exportBtn">&#8595;&nbsp;&nbsp; Descargar WAV</button>
+
+  <footer>síntesis pura &middot; web audio api</footer>
+</div>
+
+<script>
+// ── Audio context ──────────────────────────────────────────────────────────────
+let audioCtx = null;
+function getAC() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// ── Params ─────────────────────────────────────────────────────────────────────
+const OM = [392, 466.16]; // G4, Bb4
+
+function params() {
+  return {
+    gap:     +document.getElementById('gap').value,
+    sustain: +document.getElementById('sustain').value,
+    warmth:  +document.getElementById('warmth').value,
+    reverb:  +document.getElementById('reverb').value,
+  };
+}
+
+// ── Impulse reverb ─────────────────────────────────────────────────────────────
+function makeIR(ac, secs) {
+  const len = Math.floor(ac.sampleRate * secs);
+  const buf = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < len; i++)
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
+  }
+  return buf;
+}
+
+// ── Bowl synthesis ─────────────────────────────────────────────────────────────
+// Tibetan bowl partials: measured ratios 1, 2.71, 5.11, 8.1
+const PARTIALS = [
+  { r: 1,    a: 1.0  },
+  { r: 2.71, a: 0.30 },
+  { r: 5.11, a: 0.14 },
+  { r: 8.10, a: 0.05 },
+];
+
+// Analyser shared across calls
+let analyser = null;
+
+function bowlNote(ac, freq, p, dest, irBuf, t0) {
+  const warmAmp = [
+    { r: 1,    a: 1.0  },
+    { r: 2.71, a: 0.30 + p.warmth * 0.30 },
+    { r: 5.11, a: 0.14 + p.warmth * 0.14 },
+    { r: 8.10, a: 0.05 + p.warmth * 0.05 },
+  ];
+
+  // Master node for this note
+  const master = ac.createGain();
+
+  // Dry path → analyser → destination
+  if (!analyser) {
+    analyser = ac.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.connect(dest);
+  }
+  const dry = ac.createGain(); dry.gain.value = 1 - p.reverb * 0.4;
+  master.connect(dry); dry.connect(analyser);
+
+  // Wet (reverb) path
+  if (p.reverb > 0.01) {
+    const conv = ac.createConvolver();
+    conv.buffer = irBuf;
+    const wet = ac.createGain(); wet.gain.value = p.reverb * 0.6;
+    master.connect(conv); conv.connect(wet); wet.connect(analyser);
+  }
+
+  // Oscillators for each partial (slight stereo detuning → beating)
+  warmAmp.forEach(({ r, a }) => {
+    [-0.8, 0.8].forEach(dc => {
+      const osc = ac.createOscillator();
+      const g   = ac.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq * r * Math.pow(2, dc / 1200);
+      // Envelope: percussive attack, long exponential tail
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(a * 0.42, t0 + 0.007);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.007 + p.sustain);
+      osc.connect(g); g.connect(master);
+      osc.start(t0); osc.stop(t0 + p.sustain + 0.3);
+    });
+  });
+
+  // Master envelope
+  master.gain.setValueAtTime(0, t0);
+  master.gain.linearRampToValueAtTime(0.55, t0 + 0.008);
+  master.gain.exponentialRampToValueAtTime(0.0001, t0 + p.sustain + 0.2);
+}
+
+// ── Visualizer ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('viz');
+const c2d    = canvas.getContext('2d');
+let animId   = null;
+
+function drawFlat() {
+  c2d.clearRect(0, 0, canvas.width, canvas.height);
+  c2d.strokeStyle = 'rgba(122,158,142,0.2)';
+  c2d.lineWidth = 1;
+  c2d.beginPath();
+  c2d.moveTo(0, canvas.height / 2);
+  c2d.lineTo(canvas.width, canvas.height / 2);
+  c2d.stroke();
+}
+
+function startViz() {
+  if (animId) return;
+  function draw() {
+    if (!analyser) { animId = null; return; }
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteTimeDomainData(data);
+    const W = canvas.width, H = canvas.height;
+    c2d.clearRect(0, 0, W, H);
+    c2d.shadowColor = 'rgba(122,158,142,0.5)';
+    c2d.shadowBlur  = 8;
+    c2d.strokeStyle = '#7a9e8e';
+    c2d.lineWidth   = 1.5;
+    c2d.beginPath();
+    const step = W / data.length;
+    let x = 0;
+    for (let i = 0; i < data.length; i++) {
+      const y = (data[i] / 128) * (H / 2);
+      i === 0 ? c2d.moveTo(x, y) : c2d.lineTo(x, y);
+      x += step;
+    }
+    c2d.lineTo(W, H / 2);
+    c2d.stroke();
+    animId = requestAnimationFrame(draw);
+  }
+  animId = requestAnimationFrame(draw);
+}
+
+// ── Play ───────────────────────────────────────────────────────────────────────
+const bowl = document.getElementById('bowlWrap');
+const btn  = document.getElementById('playBtn');
+let playTimer = null;
+
+function play() {
+  const p  = params();
+  const ac = getAC();
+
+  // Build shared IR buffer once per play
+  const reverbSecs = p.reverb * 4 + 0.5;
+  const irBuf = makeIR(ac, reverbSecs);
+
+  const now = ac.currentTime + 0.05; // small scheduling buffer
+  bowlNote(ac, OM[0], p, ac.destination, irBuf, now);          // Sol  — G4
+  bowlNote(ac, OM[1], p, ac.destination, irBuf, now + p.gap);  // Si♭  — Bb4
+
+  startViz();
+  bowl.classList.add('playing');
+  btn.textContent = '◌  Resonando…';
+
+  const totalMs = (p.gap + p.sustain + 0.5) * 1000;
+  clearTimeout(playTimer);
+  playTimer = setTimeout(() => {
+    bowl.classList.remove('playing');
+    btn.textContent = '▷   Reproducir logo sound';
+    animId = null;
+    drawFlat();
+  }, totalMs);
+}
+
+bowl.addEventListener('click', play);
+btn.addEventListener('click', play);
+
+// ── Sliders ────────────────────────────────────────────────────────────────────
+const warmthWords = ['suave','suave','ligera','ligera','media','media','cálida','cálida','rica','plena','plena'];
+document.getElementById('gap').addEventListener('input', function() {
+  document.getElementById('gapVal').textContent = (+this.value).toFixed(1) + ' s';
+});
+document.getElementById('sustain').addEventListener('input', function() {
+  document.getElementById('sustainVal').textContent = (+this.value).toFixed(1) + ' s';
+});
+document.getElementById('warmth').addEventListener('input', function() {
+  document.getElementById('warmthVal').textContent = warmthWords[Math.round(+this.value * 10)];
+});
+document.getElementById('reverb').addEventListener('input', function() {
+  document.getElementById('reverbVal').textContent = (+this.value).toFixed(2);
+});
+
+// ── Export WAV ─────────────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const expBtn = document.getElementById('exportBtn');
+  expBtn.textContent = '⏳  Renderizando…';
+  expBtn.disabled = true;
+
+  const p   = params();
+  const dur = p.gap + p.sustain + 1.8;
+  const SR  = 44100;
+  const off = new OfflineAudioContext(2, Math.ceil(SR * dur), SR);
+
+  const irBuf = makeIR(off, p.reverb * 4 + 0.5);
+
+  // Render both notes
+  [0, p.gap].forEach((offset, ni) => {
+    const freq  = OM[ni];
+    const master = off.createGain();
+    const dry = off.createGain(); dry.gain.value = 1 - p.reverb * 0.4;
+    master.connect(dry); dry.connect(off.destination);
+
+    if (p.reverb > 0.01) {
+      const conv = off.createConvolver(); conv.buffer = irBuf;
+      const wet = off.createGain(); wet.gain.value = p.reverb * 0.6;
+      master.connect(conv); conv.connect(wet); wet.connect(off.destination);
+    }
+
+    const warmAmp = [
+      { r: 1,    a: 1.0  },
+      { r: 2.71, a: 0.30 + p.warmth * 0.30 },
+      { r: 5.11, a: 0.14 + p.warmth * 0.14 },
+      { r: 8.10, a: 0.05 + p.warmth * 0.05 },
+    ];
+    const t0 = offset;
+    warmAmp.forEach(({ r, a }) => {
+      [-0.8, 0.8].forEach(dc => {
+        const osc = off.createOscillator();
+        const g   = off.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq * r * Math.pow(2, dc / 1200);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(a * 0.42, t0 + 0.007);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.007 + p.sustain);
+        osc.connect(g); g.connect(master);
+        osc.start(t0); osc.stop(dur);
+      });
+    });
+    master.gain.setValueAtTime(0, t0);
+    master.gain.linearRampToValueAtTime(0.55, t0 + 0.008);
+    master.gain.exponentialRampToValueAtTime(0.0001, t0 + p.sustain + 0.2);
+  });
+
+  const rendered = await off.startRendering();
+
+  // WAV encode
+  const nCh  = rendered.numberOfChannels;
+  const nSmp = rendered.length;
+  const ab   = new ArrayBuffer(44 + nSmp * nCh * 2);
+  const dv   = new DataView(ab);
+  const ws   = (o, s) => { for (let i=0;i<s.length;i++) dv.setUint8(o+i, s.charCodeAt(i)); };
+  ws(0,'RIFF'); dv.setUint32(4, 36+nSmp*nCh*2, true);
+  ws(8,'WAVE'); ws(12,'fmt '); dv.setUint32(16,16,true);
+  dv.setUint16(20,1,true); dv.setUint16(22,nCh,true);
+  dv.setUint32(24,SR,true); dv.setUint32(28,SR*nCh*2,true);
+  dv.setUint16(32,nCh*2,true); dv.setUint16(34,16,true);
+  ws(36,'data'); dv.setUint32(40,nSmp*nCh*2,true);
+  let off2 = 44;
+  for (let i=0;i<nSmp;i++) {
+    for (let c=0;c<nCh;c++) {
+      const s = Math.max(-1, Math.min(1, rendered.getChannelData(c)[i]));
+      dv.setInt16(off2, s<0 ? s*0x8000 : s*0x7FFF, true);
+      off2 += 2;
+    }
+  }
+  const url = URL.createObjectURL(new Blob([ab], {type:'audio/wav'}));
+  Object.assign(document.createElement('a'), { href:url, download:'bel-terapias-logo.wav' }).click();
+  URL.revokeObjectURL(url);
+
+  expBtn.textContent = '↓  Descargar WAV';
+  expBtn.disabled = false;
+});
+
+drawFlat();
+</script>
+</body>
+</html>
